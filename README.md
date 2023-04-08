@@ -8,7 +8,7 @@
 
  Resource: chatGPT
 
- Date: 04/06/2023
+ Date: 04/08/2023
 
  This code pulls the most recent .csv file from the Omeka journals collection and doesn't a simple search based on a keyword, phrase, or date. 
 
@@ -21,8 +21,6 @@
  When a date is searched YYYY or MM-DD-YYYY, the full journal entry is displayed. 
 
 
- Items:
+ Outstanding Items:
 
- Attempts to enter an empty query does not return results, or in other attempts the formatting is improper showing html elements by character.
-
- Highlighting the keyword in code does not seem to replicate to the site.
+ Optional: Highlighting the keyword in the table does not seem to replicate to the site. A code snippet was included, but would not display on the site. 
