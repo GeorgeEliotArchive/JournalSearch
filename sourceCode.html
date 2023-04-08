@@ -1,17 +1,23 @@
+<!-- Author: George Martin, Senior Design Spring FY23, Journals Search -->
 <!-- Load Bootstrap CSS -->
 <div class="container">
-  <p><strong>Welcome&nbsp;</strong>to the George Eliot Journals page! Here you can search through all 1,878 of George Eliot's journal entries encompassing multiple books and dates. We hope you find this feature helpful and easy to use.&nbsp;</p>
-  <p><strong>Displayed Information:</strong><br />Every query will return 4 columns of information. The date of the journal entry, the source which correlates to what diary the journal entry can be found in, a reference page number from the book &lt;TITLE INFORMATION HERE&gt; for ease of cross referencing, and the journal entry itself.&nbsp;</p>
-  <p><strong>Note</strong>: All journal entries can be displayed at once by pressing the search button with no words or dates. An empty query will return all 1,878 entries. Please allow up to 15 seconds for the results to populate.</p>
+  <!-- Welcome text and information for users. -->
+  <p><strong>Welcome&nbsp;</strong>to the George Eliot Journals page! <br />Here you can search through all 1,876 of George Eliot's journal entries encompassing multiple books and dates. We hope you find this feature helpful and easy to use.&nbsp;</p>
+  <p><strong>Displayed Information:</strong><br />Every query will return 4 columns of information. The date of the journal entry, the source which correlates to what diary the journal entry can be found, a reference page number from the book &lt;TITLE INFORMATION HERE&gt; for ease of cross referencing, and the journal entry itself.&nbsp;</p>
+  <p>Journal entries displayed from keyword or key-phrase queries will display a maximum of 3 sentences before and after the found query. For the full entry, search by date.</p>
+  <p><strong>Note</strong>: All journal entries can be displayed at once by pressing the search button with no words or dates. An empty query will return all 1,876 entries. Please allow up to 15 seconds for the results to populate. Your browser may not appear to be loading the results.&nbsp;</p>
   <p><strong>How to use:<br /></strong>Using the search box below, enter keywords, key-phrases, or dates in YYYY or MM-DD-YYYY format to view all results matching your entry.<strong></strong></p>
+    <!-- Instantiate searchbox and search button. -->
   <form id="searchForm" class="form-inline">
   <div class="form-group"><strong></strong></div>
   <div class="form-group"><label for="searchTerm"><strong>Search Term:</strong></label> <input type="text" class="form-control" id="searchTerm" name="searchTerm" placeholder="Enter search term" /> <button type="submit" class="btn btn-primary">Search</button></div>
   </form>
   <p id="resultCount"></p>
+    <!-- Parameterize display. -->
   <table class="table table-striped" style="border-style: groove; border-color: black; background-color: bisque; table-layout: fixed;"><colgroup> <col width="130px" /> <col width="150px" /> <col width="100px" /> </colgroup>
   <thead>
   <tr>
+    <!-- Setup display column headers. -->
   <th>Date</th>
   <th>Source</th>
   <th>Page #</th>
@@ -26,13 +32,17 @@
   <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
   <script>
+    //Read in data from the searchbox.
   $(document).ready(function() {
     $("#searchForm").submit(function(event) {
       event.preventDefault();
       var searchTerm = $("#searchTerm").val();
       searchTerm = searchTerm.trim();
+      //Note: the URLs utilize Okema's search feature and are filtered to display Journal Entries only. Removing '&outlook=csv' will allow you to see the search page in your browser.
+      //If a keyword, phrase, or date is entered, pull from this url with filtered (Journal Entry Items) from the Collections. 
       if (searchTerm.length !== 0) {
         var url = "https://georgeeliotarchive.org/admin/items/browse?search=" + encodeURIComponent(searchTerm) + "&advanced%5B0%5D%5Bjoiner%5D=and&advanced%5B0%5D%5Belement_id%5D=&advanced%5B0%5D%5Btype%5D=&advanced%5B0%5D%5Bterms%5D=&range=&collection=&type=20&output=csv";
+      //If an emoty query is entered, remove the 'search term' element and pull all Journal Entries. 
       } else {
         var url = "https://georgeeliotarchive.org/admin/items/browse?search=&advanced%5B0%5D%5Bjoiner%5D=and&advanced%5B0%5D%5Belement_id%5D=&advanced%5B0%5D%5Btype%5D=&advanced%5B0%5D%5Bterms%5D=&range=&collection=17&type=20&tags=&public=&featured=&submit_search=Search+for+items&output=csv";
       }
@@ -40,15 +50,17 @@
         var parsedData = Papa.parse(data).data;
         parsedData.shift(); // Remove header row
         parsedData.sort(function(a, b) {
-          return new Date(a[8]) - new Date(b[8]); // Sort by date column
+          return new Date(a[8]) - new Date(b[8]); // Sort by date column in ascending order.
         });
         var html = "";
         var resultCount = 0;
         for (var i = 0; i < parsedData.length; i++) {
           if ((parsedData[i][8] && parsedData[i][8].toLowerCase().includes(searchTerm.toLowerCase())) || (parsedData[i][31] && parsedData[i][31].toLowerCase().includes(searchTerm.toLowerCase()))) {
            var content = parsedData[i][31];
+    //For date queries, show entire Journal Entry.
   if (parsedData[i][8] && (parsedData[i][8].toLowerCase().includes(searchTerm.toLowerCase()) || searchTerm.match(/^\d{4}(-\d{2}){0,2}$/))) {
     content = parsedData[i][31];
+    //For non-dated entries, display a max of 3 sentences before and after the query term. 
   } else {
     content = parsedData[i][31].replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
     var sentenceArray = content.split(/(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s/g);
@@ -62,11 +74,12 @@
     preview = preview.replace(new RegExp(searchTerm, "gi"), '<span class="highlight">$&</span>');
     content = preview;
   }
-  // added the following line to replace HTML entities with their corresponding characters
+  //Display the HTML entities in the Journal Entry colum from csv file index[31] as elements and not strings. This corrects the empty search (display all) formatting errors. 
   content = $("<div/>").html(content).text();
   var pageNumber = parsedData[i][6].split("^^")[1];
   var source = parsedData[i][6].split("^^")[0];
   html += "<tr><td>" + parsedData[i][8] + "</td><td>" + source + "</td><td>" + pageNumber + "</td><td>" + content.replace(new RegExp(searchTerm, "gi"), '<span class="highlight">$&</span>') + "</td></tr>";
+  //Calculate the number of returned items on the webpage.
   resultCount++;
           }
         }
